@@ -4,11 +4,16 @@ from typing import Annotated
 from fastapi.exceptions import HTTPException
 from .database import SessionDep
 from .models import Flag, ENV_FLAG
+from .config import get_settings, Settings
 from sqlalchemy import select, func
 
 
-def verify_admin_token(x_admin_token: Annotated[str, Header()]):
-    if x_admin_token != "secret-key":
+
+def verify_admin_token(
+    x_admin_token: Annotated[str, Header()],
+    settings : Settings = Depends(get_settings)               
+):
+    if x_admin_token != settings.x_admin_token:
         raise HTTPException(status_code=403, detail="Token value is incorrect!!")
     return True 
 

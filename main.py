@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
-from .routers import flag_router,auth
+from .routers import flag,auth
 from .database import SessionDep, create_db_and_tables
 
 @asynccontextmanager
@@ -14,7 +14,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app.include_router(flag_router.router)
+app.include_router(flag.router)
 app.include_router(auth.router)
 
 

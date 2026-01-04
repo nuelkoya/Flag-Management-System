@@ -1,13 +1,13 @@
 from sqlmodel import Session, SQLModel, Field, create_engine, select
 from fastapi import Depends
 from typing import Annotated
+from .config import Settings, get_settings
 from uuid import UUID
 import uuid
 
+settings = get_settings()
 
-sqlite_file_name = "flag_database.db"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
-
+sqlite_url = settings.database_url
 connect_args = {"check_same_thread": False}
 engine = create_engine(sqlite_url, connect_args=connect_args)
 
