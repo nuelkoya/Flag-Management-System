@@ -1,6 +1,6 @@
 from pydantic import field_validator, EmailStr
-from typing import Annotated, Literal
-from sqlmodel import SQLModel, Field, AutoString
+from typing import Annotated, Literal, Optional, List
+from sqlmodel import SQLModel, Field, AutoString, Relationship
 
 from uuid import UUID
 import uuid
@@ -8,15 +8,23 @@ import uuid
 
 ENV_FLAG = Literal["prod", "stage"]
 
+class UserCreate(SQLModel):
+    email: EmailStr
+    password: str
+
+
+class User(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    email: EmailStr = Field(unique=True)
+    hashed_password : str
+    
+    flags: List["Flag"] = Relationship(back_populates="owner")
+
 class FlagBase(SQLModel):
     name: str = Field(max_length=10, index=True)
     environment: ENV_FLAG = Field(sa_type=AutoString)
     is_enabled: bool = False
     description: str 
-
-    model_config = {
-        "from_attributes": True  # This is the "Magic" fix for serialization
-    }
 
     @field_validator("name")
     @classmethod
@@ -26,14 +34,14 @@ class FlagBase(SQLModel):
         return v
    
 
-
 class InputFlag(FlagBase):
     pass 
 
 class Flag(FlagBase, table=True):
     id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    owner_id: int = Field(foreign_key="user.id")
+
+    owner: Optional[User] = Relationship(back_populates="flags")
 
 
-class User(SQLModel, table=True):
-    email: EmailStr = Field(primary_key=True)
-    password : str
+

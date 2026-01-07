@@ -4,6 +4,11 @@ from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 from .routers import flag,auth
 from .database import SessionDep, create_db_and_tables
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -16,6 +21,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.include_router(flag.router)
 app.include_router(auth.router)
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 
 
 @app.exception_handler(RequestValidationError)
