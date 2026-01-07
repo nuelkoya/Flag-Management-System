@@ -15,10 +15,8 @@ class OuterFlag(BaseModel):
 
 class FlagResponse(BaseModel):
     message: str
-    details: OuterFlag
+    items: OuterFlag
 
 class BulkFlagResponse(BaseModel):
     message: str
-    environment: str
-    enabled: bool | None = None
     items: list[OuterFlag] 

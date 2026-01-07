@@ -4,6 +4,7 @@ from functools import lru_cache
 class Settings(BaseSettings):
     x_admin_token: str 
     database_url: str
+    secret_key: str
 
     # Configuration to find the .env file
     model_config = SettingsConfigDict(env_file=".env")

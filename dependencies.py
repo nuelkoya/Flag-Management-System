@@ -3,8 +3,9 @@ from fastapi import Header, Depends
 from typing import Annotated
 from fastapi.exceptions import HTTPException
 from .database import SessionDep
-from .models import Flag, ENV_FLAG
+from .models import Flag, ENV_FLAG, User
 from .config import get_settings, Settings
+from .security import get_current_user
 from sqlalchemy import select, func
 
 
@@ -14,18 +15,18 @@ def verify_admin_token(
     settings : Settings = Depends(get_settings)               
 ):
     if x_admin_token != settings.x_admin_token:
-        raise HTTPException(status_code=403, detail="Token value is incorrect!!")
+        raise HTTPException(status_code=403, detail="Invalid Secret Header")
     return True 
 
 
 
-def query_db(
-        session: SessionDep,
-        environment: str | None = None, 
-        enabled: bool | None = None,
-        offset: int = 0,    # How many records to skip
-        limit: int = 10
-    ):
+def get_flags(
+    session: SessionDep,
+    environment: str | None = None, 
+    enabled: bool | None = None,
+    offset: int = 0,    # How many records to skip
+    limit: int = 10
+):
 
     statement = select(Flag)
 
@@ -39,18 +40,24 @@ def query_db(
     return flag_data
 
 
-def toggle_db(
-        session: SessionDep,
-        flag_name: str, 
-        environment: ENV_FLAG, 
-        _: bool = Depends(verify_admin_token)):
+def toggle_flag(
+    session: SessionDep,
+    flag_name: str, 
+    environment: ENV_FLAG, 
+    current_user : Annotated[User, Depends(get_current_user)],
+    _: bool = Depends(verify_admin_token),
+):
     
-    statement = select(Flag).where(Flag.environment == environment, func.lower(Flag.name) == flag_name.lower())
+    statement = select(Flag).where(
+        current_user.id == Flag.owner_id,
+        Flag.environment == environment, 
+        func.lower(Flag.name) == flag_name.lower(),
+        )
 
     flag = session.exec(statement).scalar()
 
     if not flag:
-        raise HTTPException(status_code=404, detail="Flag not found") 
+        raise HTTPException(status_code=404, detail="Flag not found or unauthorized") 
     
     flag.is_enabled = not flag.is_enabled
 
@@ -61,24 +68,28 @@ def toggle_db(
 
 
 
-def delete_db(
-        session: SessionDep,
-        flag_name: str, 
-        environment: ENV_FLAG, 
-        _: bool = Depends(verify_admin_token)):    
-    print("innnnn")
-    statement = select(Flag).where(Flag.environment == environment, func.lower(Flag.name) == flag_name)
+def delete_flag(
+    session: SessionDep,
+    flag_name: str, 
+    environment: ENV_FLAG, 
+    current_user : Annotated[User, Depends(get_current_user)],
+    _: bool = Depends(verify_admin_token)
+):    
+    statement = select(Flag).where(
+        current_user.id == Flag.owner_id,
+        Flag.environment == environment, 
+        func.lower(Flag.name) == flag_name)
 
     flag = session.exec(statement).scalar()
 
     if not flag:
-        raise HTTPException(status_code=404, detail="Flag not found") 
+        raise HTTPException(status_code=404, detail="Flag not found or unauthorized ") 
     
+
     session.delete(flag)
     session.commit()
-
     return {"ok": True}
-    
+
 
            
 
