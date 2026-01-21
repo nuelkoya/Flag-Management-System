@@ -1,14 +1,46 @@
 import requests
+from config import get_settings
 
-jwt_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0MkBnbWFpbC5jb20iLCJleHAiOjE3Njc3NTYzMzh9.q7dtIb7q19YI3K1wtkvNTj0r2CX1zePTZ3qAn_fOK-A"
-headers = {
-    "Authorization": f"Bearer {jwt_token}",
-    "Content-Type": "application/json"
+settings = get_settings()
+BASE_URL = 'http://127.0.0.1:8000'
+USER_CREDENTIALS = {
+    "username": "test1@gmail.com",
+    "password": settings.user_password
 }
 
+
+
+def get_authorized_session():
+    session = requests.Session()
+
+    response = session.post(f"{BASE_URL}/login", data=USER_CREDENTIALS)
+
+    if response.status_code != 200:
+        print(f"Login failed: {response.text}")
+        return None
+
+    token = response.json().get('access_token')
+
+    session.headers.update({
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    })
+
+    return session
+
+
+
 def rate_test():
+    client = get_authorized_session()
+
+    if not client:
+        return 
+    
     for i in range(10):
-        response = requests.get('http://127.0.0.1:8000/flags', headers=headers)
+        response = client.get(f'{BASE_URL}/flags')
         print(response.status_code)
         print(response.json())
-rate_test()
+
+if __name__ == "__main__":
+    rate_test()
+
