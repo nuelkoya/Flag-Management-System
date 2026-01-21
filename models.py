@@ -1,6 +1,7 @@
 from pydantic import field_validator, EmailStr
 from typing import Annotated, Literal, Optional, List
 from sqlmodel import SQLModel, Field, AutoString, Relationship
+from datetime import datetime, timezone
 
 from uuid import UUID
 import uuid
@@ -39,8 +40,12 @@ class InputFlag(FlagBase):
 
 class Flag(FlagBase, table=True):
     id: UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(
+    default_factory=lambda: datetime.now(timezone.utc),
+    sa_column_kwargs={"onupdate": lambda: datetime.now(timezone.utc)}
+    )
     owner_id: int = Field(foreign_key="user.id")
-
     owner: Optional[User] = Relationship(back_populates="flags")
 
 
