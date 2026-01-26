@@ -3,16 +3,19 @@ from typing import Annotated, Literal, Optional, List
 from sqlmodel import SQLModel, Field, AutoString, Relationship
 from datetime import datetime, timezone
 
+
 from uuid import UUID
 import uuid
 
 
 ENV_FLAG = Literal["prod", "stage"]
 
+
+
 class UserCreate(SQLModel):
     email: EmailStr
-    password: str
-
+    password: str 
+        
 
 class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
