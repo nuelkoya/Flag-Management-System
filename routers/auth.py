@@ -1,3 +1,4 @@
+import re
 from fastapi import APIRouter, Depends
 from fastapi.exceptions import HTTPException
 from typing import Annotated
@@ -17,6 +18,7 @@ router = APIRouter()
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 5
+STRONG_PASSWORD_REGEX = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$"
 
 
 def authenticate_user(session:SessionDep, username: str, password:str):
@@ -29,6 +31,13 @@ def authenticate_user(session:SessionDep, username: str, password:str):
 
 @router.post("/signup")
 def sign_up(user: UserCreate, session:SessionDep):
+    if not re.match(STRONG_PASSWORD_REGEX, user.password):
+        raise HTTPException(
+                status_code=422,
+                detail="Password must be at least 8 characters long, "
+                "include uppercase, lowercase, a number, and a symbol."
+            )
+
     
     new_user = User(
         email=user.email,
@@ -37,7 +46,8 @@ def sign_up(user: UserCreate, session:SessionDep):
     session.add(new_user)
     session.commit()
     session.refresh(new_user)
-    return user
+    return {"user": new_user.email, "message": "User created!"}
+  
 
 @router.post("/login/")
 def login(

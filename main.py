@@ -7,6 +7,7 @@ from .database import SessionDep, create_db_and_tables
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from pydantic import ValidationError
 
 
 
@@ -39,6 +40,15 @@ async def flag_exception(request: Request, exc: RequestValidationError):
         }    
     )
 
+"""
+@app.exception_handler(ValueError)
+@app.exception_handler(ValidationError)
+async def value_error_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=422,
+        content={"detail": str(exc)},
+    )
+"""
 @app.get("/")
 def root(session: SessionDep):
     return f"Welcome to this flag project{session}"
