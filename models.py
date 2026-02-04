@@ -1,5 +1,5 @@
 from pydantic import field_validator, EmailStr
-from typing import Annotated, Literal, Optional, List
+from typing import Literal, Optional, List
 from sqlmodel import SQLModel, Field, AutoString, Relationship
 from datetime import datetime, timezone
 
