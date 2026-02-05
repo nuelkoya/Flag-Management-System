@@ -1,7 +1,7 @@
 from sqlmodel import Session, SQLModel, Field, create_engine, select
 from fastapi import Depends
 from typing import Annotated
-from .config import Settings, get_settings
+from config import Settings, get_settings
 from uuid import UUID
 import uuid
 

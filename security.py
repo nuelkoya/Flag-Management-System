@@ -2,11 +2,11 @@ from fastapi import Depends
 from pwdlib import PasswordHash
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from datetime import datetime, timedelta, timezone
-from .config import get_settings
+from config import get_settings
 from fastapi.exceptions import HTTPException
-from .database import SessionDep
+from database import SessionDep
 from sqlalchemy import select
-from .models import User
+from models import User
 import jwt
 from jwt import PyJWTError
 

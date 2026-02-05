@@ -6,12 +6,12 @@ from typing import Annotated
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from ..database import SessionDep
-from ..security import get_password_hash, verify_password
-from ..models import User, UserCreate
-from ..database import SessionDep
+from database import SessionDep
+from security import get_password_hash, verify_password
+from models import User, UserCreate
+from database import SessionDep
 from datetime import timedelta
-from ..security import create_access_token
+from security import create_access_token
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
