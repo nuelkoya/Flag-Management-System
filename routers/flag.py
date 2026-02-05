@@ -3,7 +3,7 @@ from typing import Annotated
 from dependencies import get_flags, toggle_flag, delete_flag, verify_admin_token
 from database import SessionDep
 from models import Flag, InputFlag, User
-from schemas import FlagResponse, OuterFlag, BulkFlagResponse
+from schemas import OuterFlag, BulkFlagResponse
 from security import get_current_user
 from slowapi import Limiter
 from slowapi.util import get_remote_address
