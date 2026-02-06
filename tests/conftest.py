@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from unittest.mock import MagicMock
 from main import app
 from security import get_current_user
-from dependencies import verify_admin_token, get_flags, toggle_flag
+from dependencies import verify_admin_token, get_flags_dep, toggle_flag
 from database import get_session
 from config import get_settings
 
@@ -41,7 +41,7 @@ def mock_admin():
 
     app.dependency_overrides[get_current_user] = lambda: user
     app.dependency_overrides[get_session] = lambda: MagicMock()
-    app.dependency_overrides[get_flags] = lambda : mock_flag_data
+    app.dependency_overrides[get_flags_dep] = lambda : mock_flag_data
     app.dependency_overrides[toggle_flag] = lambda : mock_flag_data[0]
     
     yield user 

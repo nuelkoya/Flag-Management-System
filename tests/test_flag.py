@@ -72,6 +72,11 @@ def test_update_flag_unauthenticated(client, environment):
     assert response.json() == {"detail": "Not authenticated"}
 
 
+@pytest.mark.parametrize("environment", [('prod'), ('stage')])
+def test_delete_flag(client, mock_admin, environment, mock_flag_data_dict):
+    #flag_name = "Testadmin"
+    response = client.delete(f"/flags/{environment}/{mock_flag_data_dict['name']}")
+    assert response.status_code == 200
 
 
     
