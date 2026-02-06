@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
-from routers import flag,auth
+from routers import auth, flag
 from database import SessionDep, create_db_and_tables
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
