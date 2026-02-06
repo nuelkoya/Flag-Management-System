@@ -20,7 +20,7 @@ def verify_admin_token(
 
 
 
-def get_flags(
+def get_flags_dep(
     session: SessionDep,
     environment: str | None = None, 
     enabled: bool | None = None,
@@ -68,7 +68,7 @@ def toggle_flag(
 
 
 
-def delete_flag(
+def delete_flag_dep(
     session: SessionDep,
     flag_name: str, 
     environment: ENV_FLAG, 

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 from typing import Annotated
-from dependencies import get_flags, toggle_flag, delete_flag, verify_admin_token
+from dependencies import get_flags_dep, toggle_flag, delete_flag_dep, verify_admin_token
 from database import SessionDep
 from models import Flag, InputFlag, User
 from schemas import OuterFlag, BulkFlagResponse
@@ -17,7 +17,7 @@ limiter = Limiter(key_func=get_remote_address)
 def get_flags(
     request: Request,
     current_user: Annotated[User, Depends(get_current_user)],
-    data= Depends(get_flags),
+    data= Depends(get_flags_dep),
 ):
 
     return {
@@ -46,7 +46,7 @@ def update_flag(data = Depends(toggle_flag)):
 
 
 @router.delete("/flags/{environment}/{flag_name}")
-def delete_flag(result = Depends(delete_flag)):
+def delete_flag(result = Depends(delete_flag_dep)):
     return result
 
     
