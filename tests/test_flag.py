@@ -1,3 +1,4 @@
+import pytest
 
 def test_get_flags(client, mock_admin):
     response = client.get("/flags/")
@@ -47,6 +48,28 @@ def test_create_flag_invalid_data(client,  mock_admin,):
     response = client.post("/flags/", json=invalid_payload)
     assert response.status_code == 400
 
+
+@pytest.mark.parametrize("environment", [('prod'), ('stage')])
+def test_update_flag(client, mock_admin, environment):
+    flag_name = "Testadmin"
+    response = client.patch(f"/flags/{environment}/{flag_name}")
+    assert response.status_code == 200
+    
+
+@pytest.mark.parametrize("environment", [('prod'), ('stage')])
+def test_update_flag_invalid_flag_name(client, mock_admin, environment):
+    flag_name = ""
+    response = client.patch(f"/flags/{environment}/{flag_name}")
+    print(environment)
+    assert response.status_code == 404
+    assert response.json() == {"detail":"Not Found"}
+
+@pytest.mark.parametrize("environment", [('prod'), ('stage')])
+def test_update_flag_unauthenticated(client, environment):
+    flag_name = "Testadmin"
+    response = client.patch(f"/flags/{environment}/{flag_name}")
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Not authenticated"}
 
 
 
