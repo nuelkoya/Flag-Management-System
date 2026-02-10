@@ -27,7 +27,8 @@ def get_flags_dep(
     offset: int = 0,    # How many records to skip
     limit: int = 10
 ):
-
+    if not isinstance(offset, int) or not isinstance(limit, int):
+        raise TypeError("Offset and Limit must be integers")
     statement = select(Flag)
 
     if environment:

@@ -56,3 +56,7 @@ def mock_flag_data_list():
 @pytest.fixture
 def mock_flag_data_dict():
     return mock_flag_data[0]
+
+@pytest.fixture
+def user():
+    return MockUser(id=1, username="testadmin")
