@@ -1,10 +1,10 @@
+from unittest.mock import MagicMock
 import pytest
-from dependencies import verify_admin_token
 from fastapi import FastAPI, Depends
 from fastapi.testclient import TestClient
 from fastapi.exceptions import HTTPException
-
-
+from sqlalchemy.exc import SQLAlchemyError
+from dependencies import verify_admin_token, get_flags_dep, toggle_flag
 
 
 def test_verify_admin_token_unit_valid(settings):
@@ -44,3 +44,81 @@ def test_verify_admin_token(settings):
 
     
 
+def test_get_flags_dep(mock_flag_data_list):
+    mock_session = MagicMock()
+    mock_session.exec.return_value.scalars.return_value.all.return_value  = mock_flag_data_list
+    
+    result = get_flags_dep (
+        session = mock_session,
+        environment = mock_flag_data_list[0]["environment"],
+        enabled = mock_flag_data_list[0]["is_enabled"],
+        offset = 0,
+        limit = 10
+    )
+
+    assert len(result) == 1
+    assert mock_session.exec.called
+    assert result == mock_flag_data_list
+
+
+@pytest.mark.parametrize("offset, limit", [(0, "100"), ("2", 5), ("3", "10")])
+def test_get_flags_dep_invalid(mock_flag_data_list, offset, limit):
+    mock_session = MagicMock()
+    mock_session.exec.return_value.scalars.return_value.all.return_value = mock_flag_data_list
+    
+
+    with pytest.raises(TypeError) as exc:
+        get_flags_dep (
+            session = mock_session,
+            environment = mock_flag_data_list[0]["environment"],
+            enabled = mock_flag_data_list[0]["is_enabled"],
+            offset = offset,
+            limit = limit
+        )
+    assert str(exc.value) == "Offset and Limit must be integers"
+
+
+def test_get_flags_dep_db_failure(mock_flag_data_list):
+    mock_session = MagicMock()
+    mock_session.exec.return_value.scalars.return_value.all.side_effect = SQLAlchemyError("Database connection lost") 
+    
+    with pytest.raises(SQLAlchemyError) as exc:
+        get_flags_dep (
+            session = mock_session,
+            environment = "prod",
+            enabled = False,
+            offset = 0,
+            limit = 10
+        )
+    assert str(exc.value) == "Database connection lost"
+    assert mock_session.exec.called
+
+
+def test_toggle_flag(user):
+    mock_session = MagicMock()
+    fake_flag = MagicMock(is_enabled = False)
+    mock_session.exec.return_value.scalar.return_value = fake_flag
+    result = toggle_flag(
+        session=mock_session,
+        flag_name="test-flag",
+        environment="prod",
+        current_user=user,
+    )
+    assert fake_flag.is_enabled == True
+    assert mock_session.add.called
+    assert mock_session.commit.called
+
+
+def test_toggle_flag_db_failure(user):
+    mock_session = MagicMock()
+    mock_session.exec.return_value.scalar.side_effect = SQLAlchemyError("Database connection lost")
+    with pytest.raises(SQLAlchemyError, match = "Database connection lost") as exc:
+        toggle_flag(
+            session=mock_session,
+            flag_name="test-flag",
+            environment="prod",
+            current_user=user,
+            _=True
+        )
+    assert mock_session.commit.called is False
+   

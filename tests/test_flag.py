@@ -64,7 +64,6 @@ def test_update_flag(client, mock_admin, environment):
 def test_update_flag_invalid_flag_name(client, mock_admin, environment):
     flag_name = ""
     response = client.patch(f"/flags/{environment}/{flag_name}")
-    print(environment)
     assert response.status_code == 404
     assert response.json() == {"detail":"Not Found"}
 
