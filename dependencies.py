@@ -84,7 +84,7 @@ def delete_flag_dep(
     flag = session.exec(statement).scalar()
 
     if not flag:
-        raise HTTPException(status_code=404, detail="Flag not found or unauthorized ") 
+        raise HTTPException(status_code=404, detail="Flag not found or unauthorized") 
     
 
     session.delete(flag)

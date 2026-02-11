@@ -4,7 +4,7 @@ from fastapi import FastAPI, Depends
 from fastapi.testclient import TestClient
 from fastapi.exceptions import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
-from dependencies import verify_admin_token, get_flags_dep, toggle_flag
+from dependencies import verify_admin_token, get_flags_dep, toggle_flag, delete_flag_dep
 
 
 def test_verify_admin_token_unit_valid(settings):
@@ -121,4 +121,49 @@ def test_toggle_flag_db_failure(user):
             _=True
         )
     assert mock_session.commit.called is False
+
+
+def test_delete_flag_dep(user):
+    mock_session = MagicMock()
+    fake_flag = MagicMock()
+    mock_session.exec.return_value.scalar.return_value = fake_flag
+
+    result = delete_flag_dep (
+        session = mock_session,
+        flag_name= "test-flag",
+        environment = "prod",
+        current_user = user,
+        _ = True
+    )
+
+    mock_session.delete.assert_called_once_with(fake_flag)
+   
+    assert result == {"ok": True}
+    assert mock_session.delete.called
+    assert mock_session.commit.called
+
+    
+def test_delete_flag_dep_not_found(user):
+    mock_session = MagicMock()
+    fake_flag = MagicMock()
+    mock_session.exec.return_value.scalar.return_value = None
+
+    with pytest.raises(HTTPException) as exc:
+        delete_flag_dep (
+            session = mock_session,
+            flag_name= "test-flag",
+            environment = "stage",
+            current_user = user,
+            _ = True
+        )
+
+
+    assert str(exc.value) != {"ok": True}
+    assert exc.value.status_code == 404
+    assert exc.value.detail == "Flag not found or unauthorized"
+    assert not mock_session.delete.called
+    assert not mock_session.commit.called
+
+    
+    
    
