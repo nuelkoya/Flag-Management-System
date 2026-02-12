@@ -47,7 +47,7 @@ def sign_up(request: Request, user: UserCreate, session:SessionDep):
 
     if session.exec(select(User).where(User.email == user.email)).first():
         raise HTTPException(
-            status_code=422,
+            status_code=409,
             detail="Email is already in use."
         )
    
