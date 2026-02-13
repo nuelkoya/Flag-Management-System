@@ -1,8 +1,11 @@
 from unittest.mock import MagicMock, patch
 import pytest
-from pwdlib import PasswordHash
+import jwt
+from jwt import PyJWTError
 from datetime import timedelta
-from security import verify_password, get_password_hash, create_access_token
+from pwdlib import PasswordHash
+from fastapi.exceptions import HTTPException
+from security import verify_password, get_password_hash, create_access_token, get_current_user
 
 
 hasher = PasswordHash.recommended()
@@ -78,6 +81,34 @@ def test_create_access_token_missing_data():
     
     assert "NoneType" in str(exc.value) 
 
+
+def test_get_current_user():
+    mock_session = MagicMock()
+    fake_user = MagicMock()
+    fake_user.email = "test1@example.com"
+
+    mock_session.exec.return_value.scalar.return_value = fake_user
+
+    fake_payload={"sub": "test1@example.com"}
+    with patch("jwt.decode", return_value=fake_payload):
+        result = get_current_user(
+            session=mock_session,
+            token="fake-token-string" 
+        )
+   
+    assert result.email == "test1@example.com"
+    mock_session.exec.assert_called_once()
+
+
+def test_get_current_user_invalid_token():
+    mock_session = MagicMock()
+
+    with patch("jwt.decode", side_effect=PyJWTError):
+        with pytest.raises(HTTPException) as exc:
+            get_current_user(session=mock_session, token="bad-token")
+    
+    assert exc.value.status_code == 401
+    assert exc.value.detail == "Could not validate credentials"
     
 
 
