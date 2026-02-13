@@ -1,7 +1,8 @@
 from unittest.mock import MagicMock, patch
 import pytest
 from pwdlib import PasswordHash
-from security import verify_password, get_password_hash
+from datetime import timedelta
+from security import verify_password, get_password_hash, create_access_token
 
 
 hasher = PasswordHash.recommended()
@@ -41,5 +42,42 @@ def test_get_password_hash_empty():
     )
     assert "$argon" in result
 
+
+def test_create_access_token_custom():
+    fake_data = {
+        "sub": "test1@example.com"
+    }
+
+    result = create_access_token(
+        data = fake_data,
+        expires_delta = timedelta(minutes=5)
+    )
+    assert len(result) > 20
+
+
+
+def test_create_access_token_default():
+    fake_data = {
+        "email": "test1@example.com"
+    }
+    
+    result = create_access_token(
+        data = fake_data,
+        expires_delta = None
+    )
+    assert len(result) > 20
+
+
+
+def test_create_access_token_missing_data():
+    with pytest.raises(AttributeError) as exc:
+        create_access_token(
+            data = None,
+            expires_delta = None
+        )
+    
+    assert "NoneType" in str(exc.value) 
+
+    
 
 

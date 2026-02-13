@@ -1,6 +1,6 @@
 from fastapi import Depends
 from pwdlib import PasswordHash
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from datetime import datetime, timedelta, timezone
 from config import get_settings
 from fastapi.exceptions import HTTPException
