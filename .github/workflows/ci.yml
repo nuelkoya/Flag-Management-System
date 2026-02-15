@@ -33,6 +33,6 @@ jobs:
           X_ADMIN_TOKEN: ${{secrets.X_ADMIN_TOKEN}}
           DATABASE_URL: ${{secrets.DATABASE_URL}}
           SECRET_KEY: ${{secrets.SECRET_KEY}}
-        run: pytest
+        run: python3 -m pytest
 
 
