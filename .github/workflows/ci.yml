@@ -26,6 +26,7 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install pytest
+          pip install httpx
     
       - name: Test with pytest
         env: 
