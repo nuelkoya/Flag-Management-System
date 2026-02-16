@@ -35,5 +35,29 @@ jobs:
           SECRET_KEY: ${{secrets.SECRET_KEY}}
           USER_PASSWORD: ${{secrets.USER_PASSWORD}}
         run: python3 -m pytest
+    
 
+  docker:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps: 
+      - name: Check out the repo
+        uses: actions/checkout@v5
+
+      - name: Build Docker image
+        run: docker build -t flag-management:test .
+
+      - name: Test Container
+        run: |
+          docker run -d -p 8000:8000 --name test-app \
+          -e SECRET_KEY=test -e DATABASE_URL=sqlite:///./test.db \
+          -e X_ADMIN_TOKEN=test -e USER_PASSWORD=test \
+          flag-management:test
+
+          sleep 5
+          
+          curl --fail http://localhost:8000/docs || exit 1
+  
+          docker stop test-app
 
