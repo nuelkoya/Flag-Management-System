@@ -1,4 +1,4 @@
-# 📍 Table of Contents
+# Table of Contents
 * [Project Overview](#Flag-Management-System)
 * [Features](#features)
 * [Tech Stack](#tech-stack)
